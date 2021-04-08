@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: frontend
   labels:
@@ -17,8 +17,18 @@ spec:
       containers:
       - image: vkryukov/kube-homework-front:contrl
         name: frontend
+        readinessProbe:
+          initialDelaySeconds: 10
+          httpGet:
+            path: "/_healthz"
+            port: 8080
+            httpHeaders:
+            - name: "Cookie"
+              value: "shop_session-id=x-readiness-probe"
         resources: {}
         env:
+        - name: PORT
+          value: "8080"
         - name: PRODUCT_CATALOG_SERVICE_ADDR
           value: "productcatalogservice:3550"
         - name: CURRENCY_SERVICE_ADDR
