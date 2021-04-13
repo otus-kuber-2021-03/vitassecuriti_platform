@@ -12,3 +12,4 @@ subjects:
   - apiGroup: ""
     kind: ServiceAccount
     name: ken
+    namespace: dev
