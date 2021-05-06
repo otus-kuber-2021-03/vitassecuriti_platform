@@ -43,3 +43,5 @@
    Для удачной установки чарта не хватало  Namespace и ClusterIssuers
    Дополнительно, нужно поставить LoadBalancer от mettalb иначе externalip не будет выдан
 
+- Для добавления репозитория harbor ипользовался helm repo add harbor https://helm.goharbor.io
+  
