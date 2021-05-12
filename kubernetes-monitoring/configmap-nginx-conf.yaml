@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  nginx.conf: |
+    pid /tmp/nginx.pid;
+
+    events {
+        worker_connections 128;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+
+        server {
+            listen 8080; 
+            root /var/www/html; 
+
+            location / {
+                try_files $uri /index.html;
+            }
+
+            location = /basic_status {
+                stub_status;
+            }
+        }
+    }
