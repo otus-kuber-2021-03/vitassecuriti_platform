@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-index
+data:
+  index.html: |
+    <html>
+      <h1> HomeWork monitoring </h1>
+    <body>
+      <p> Index for nginx </p>
+    </body>
+    </html>
