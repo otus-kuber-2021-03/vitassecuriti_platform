@@ -8,3 +8,9 @@
 8. Проверяем возможность создать индекс. Индекса нет, так как в логах Fluent no upstream connections available
 9. Редактируем values fluent меняем название бекенда на название сервиса elasticserach-master и type = es
 10. Проверяем возможность создать индекс. Данные в ЕС появились, можно создать паттерн индекса, так как появился индекс kubernetes_cluster-2021.06.28
+11. Установил prometheus-stack
+12. Установка prometheus-community/prometheus-elasticsearch-exporter
+13 импорт дашборда графаны
+14. Игра с недоступностью  нод
+15 Шаманство с логами
+16 Установка Loki
