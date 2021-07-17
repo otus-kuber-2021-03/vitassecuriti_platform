@@ -1,0 +1,16 @@
+1. Создал кластер в gcloud с 2мя пулами (default и infra) согласно инструкции
+2. Установил gcloud-cli на локальную машину. Настроил подключение к кластеру в облаке.
+3. Установил ршзыеукЫрщз в default-pool
+4. Добавил репозиторий helm repo add elastic https://helm.elastic.co
+5. Редактирование elasticsearch values
+6. Установка nginx-ingress из  оф документации
+7. Редактирование kibana values в части ingress секции
+8. Проверяем возможность создать индекс. Индекса нет, так как в логах Fluent no upstream connections available
+9. Редактируем values fluent меняем название бекенда на название сервиса elasticserach-master и type = es
+10. Проверяем возможность создать индекс. Данные в ЕС появились, можно создать паттерн индекса, так как появился индекс kubernetes_cluster-2021.06.28
+11. Установил prometheus-stack
+12. Установка prometheus-community/prometheus-elasticsearch-exporter
+13 импорт дашборда графаны
+14. Игра с недоступностью  нод
+15 Шаманство с логами
+16 Установка Loki
