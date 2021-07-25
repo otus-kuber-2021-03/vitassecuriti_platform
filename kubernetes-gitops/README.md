@@ -1,192 +1,152 @@
-<p align="center">
-<img src="src/frontend/static/icons/Hipster_HeroLogoCyan.svg" width="300" alt="Online Boutique" />
-</p>
+# HW 15: GitOps
 
+gitlab URI - https://gitlab.com/vitassecuriti/microservicesdemo.git
 
-![Continuous Integration](https://github.com/GoogleCloudPlatform/microservices-demo/workflows/Continuous%20Integration%20-%20Master/Release/badge.svg)
+1. Подготовил образы с тегом v0.0.1
+2. Создал кластер из 4х нод а GKE с поддержкой Istio
+3. Установил flux https://github.com/fluxcd/helm-operator-get-started т.к. в инструкции ссылк не рабочая
+4. Обновил с учетом своего репозитория
+   ```bash
+   helm upgrade -i flux fluxcd/flux --wait \
+   --namespace fluxcd \
+   --set git.url=git@gitlab.com:vitassecuriti/microservicesdemo.git
+   ```
+  5. Установил helm-operator
+  6. Устновил на локальный хость fluxctl
+  7. получил ключ для доступа по ssh и добавил в свой профиль gitlab
+  8. Добавил файл с неймспейсом microservices-demo
+     ```
+     ts=2021-07-23T21:53:41.339690169Z caller=sync.go:606 method=Sync cmd="kubectl apply -f -" took=946.202521ms err=null output="namespace/microservices-demo created\nnamespace/production
+     ```
+9.  В папку deploy/release добавил файл frontend.yaml   
+10. Так как ресурс helmrelease не поднимался в в describe ресурса была ошибка
+   ```
+   Warning  FailedReleaseSync  18m                       helm-operator  synchronization of release 'frontend' in namespace 'microservices-demo' failed: failed to prepare chart for release: chart not ready: no existing git mirror found
+  Warning  FailedReleaseSync  <invalid> (x12 over 18m)  helm-operator  synchronization of release 'frontend' in namespace 'microservices-demo' failed: installation failed: unable to build kubernetes objects from release manifest: unable to recognize "": no matches for kind "ServiceMonitor" in version "monitoring.coreos.com/v1"
+  ```
+  Дополнительно поставил prometheus-operator из проекта https://github.com/prometheus-operator/prometheus-operator.git
+  
+  ```
+  $ kubectl get helmrelease -n microservices-demo
+  NAME       RELEASE    PHASE       RELEASESTATUS   MESSAGE                                                                       AGE
+  frontend   frontend   Succeeded   deployed        Release was successful for Helm release 'frontend' in 'microservices-demo'.   21h
+  ```
+11. Обновил образ на версию v0.0.2 обновил манифест frontend.yaml. Сервис перевыкатился
+   ```
+   $ helm history frontend -n microservices-demo
+   REVISION	UPDATED                 	STATUS    	CHART          	APP VERSION	DESCRIPTION     
+   1       	Sat Jul 24 20:28:15 2021	superseded	frontend-0.21.0	1.16.0     	Install complete
+   2       	Sat Jul 24 20:49:18 2021	deployed  	frontend-0.21.0	1.16.0     	Upgrade complete
+   
+   $ helm list -n microservices-demo
+   NAME    	NAMESPACE         	REVISION	UPDATED                                	STATUS  	CHART          	APP VERSION
+   frontend	microservices-demo	2       	2021-07-24 20:49:18.191169468 +0000 UTC	deployed	frontend-0.21.0	1.16.0 
+   ```
+12. Переименовал наименование deployment
+   ```
+   $ kubectl logs helm-operator-654b5bf9fc-pszkg -n fluxcd | grep hipster
+   ts=2021-07-24T21:01:11.81867106Z caller=helm.go:69 component=helm version=v3 info="Created a new Deployment called
+   \"frontend-hipster\" in microservices-demo\n" targetNamespace=microservices-demo release=frontend
+   ```
+13. Добавил манифесты для остальных сервисов
+   ```
+   $ kubectl get pods -n microservices-demo
+  NAME                                     READY   STATUS     RESTARTS   AGE
+  adservice-84fb69d8cc-pss7d               1/1     Running    0          3m20s
+  checkoutservice-7995988d9c-q7xqk         1/1     Running    0          3m20s
+  currencyservice-765464d5f-7bp9h          1/1     Running    0          3m20s
+  emailservice-7c7fd7c87c-6j585            1/1     Running    0          3m19s
+  frontend-hipster-86d845f998-xfgnj        1/1     Running    0          34m
+  loadgenerator-6f4489f665-rh897           1/1     Running    0          3m14s
+  paymentservice-759c55f864-mhkg4          1/1     Running    0          110s
+  productcatalogservice-7f5955b57c-r8mdw   1/1     Running    0          3m11s
+  recommendationservice-579495b989-bmpgh   1/1     Running    0          3m10s
+  shippingservice-55b8c4969c-f4vck         1/1     Running    0          3m6s
 
+  helm list -n microservices-demo
+  NAME                   	NAMESPACE         	REVISION	UPDATED                                	STATUS  	CHART                        	APP VERSION
+  adservice              	microservices-demo	1       	2021-07-24 21:32:21.566002632 +0000 UTC	deployed	adservice-0.5.0              	1.16.0     
+  checkoutservice        	microservices-demo	1       	2021-07-24 21:32:21.932789467 +0000 UTC	deployed	checkoutservice-0.4.0        	1.16.0     
+  currencyservice        	microservices-demo	1       	2021-07-24 21:32:21.772945996 +0000 UTC	deployed	currencyservice-0.4.0        	1.16.0     
+  emailservice           	microservices-demo	1       	2021-07-24 21:32:23.89093537 +0000 UTC 	deployed	emailservice-0.4.0           	1.16.0     
+  frontend               	microservices-demo	3       	2021-07-24 21:01:11.496245605 +0000 UTC	deployed	frontend-0.21.0              	1.16.0     
+  grafana-load-dashboards	microservices-demo	1       	2021-07-24 21:32:24.606287942 +0000 UTC	deployed	grafana-load-dashboards-0.0.3	           
+  loadgenerator          	microservices-demo	1       	2021-07-24 21:32:29.00886585 +0000 UTC 	deployed	loadgenerator-0.4.0          	1.16.0     
+  paymentservice         	microservices-demo	2       	2021-07-24 21:33:52.714721397 +0000 UTC	deployed	paymentservice-0.3.0         	1.16.0     
+  productcatalogservice  	microservices-demo	1       	2021-07-24 21:32:31.767926349 +0000 UTC	deployed	productcatalogservice-0.3.0  	1.16.0     
+  recommendationservice  	microservices-demo	1       	2021-07-24 21:32:32.787781918 +0000 UTC	deployed	recommendationservice-0.3.0  	1.16.0     
+  shippingservice        	microservices-demo	1       	2021-07-24 21:32:36.722941644 +0000 UTC	deployed	shippingservice-0.3.0        	1.16.0
+   ```
+14. Установил Istio
+15. Установил Flagger
+16. Изменил ранее созданный манифест с неймспейсом, добавил label
+   ```
+   $ kubectl get ns microservices-demo --show-labels
+   NAME                 STATUS   AGE   LABELS
+   microservices-demo   Active   22h   istio-injection=enabled
+   ```
+17. Удалил все поды
+   ```bash
+   kubectl delete pods --all -n microservices-demo
+   ```
+18. Проверил, что в подах создались sidecar
+   ```
+   $kubectl describe pod -l app=frontend -n microservices-demo
+containers:
+  ...
+  istio-proxy:
+  ...
+    Args:
+      proxy
+      sidecar
+      ...
+   ```
+19. Добавил манифесты c VirtualService и Gateway
+   ```
+   kubectl get gateway -n microservices-demo
+   NAME               AGE
+   frontend-gateway   127m
 
-**Online Boutique** is a cloud-native microservices demo application.
-Online Boutique consists of a 10-tier microservices application. The application is a
-web-based e-commerce app where users can browse items,
-add them to the cart, and purchase them.
+$ kubectl get svc istio-ingressgateway -n istio-system
 
-**Google uses this application to demonstrate use of technologies like
-Kubernetes/GKE, Istio, Stackdriver, gRPC and OpenCensus**. This application
-works on any Kubernetes cluster, as well as Google
-Kubernetes Engine. It’s **easy to deploy with little to no configuration**.
-
-If you’re using this demo, please **★Star** this repository to show your interest!
-
-> 👓**Note to Googlers:** Please fill out the form at
-> [go/microservices-demo](http://go/microservices-demo) if you are using this
-> application.
-
-Looking for the old Hipster Shop frontend interface? Use the [manifests](https://github.com/GoogleCloudPlatform/microservices-demo/tree/v0.1.5/kubernetes-manifests) in release [v0.1.5](https://github.com/GoogleCloudPlatform/microservices-demo/releases/v0.1.5).
-
-## Screenshots
-
-| Home Page                                                                                                         | Checkout Screen                                                                                                    |
-| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [![Screenshot of store homepage](./docs/img/online-boutique-frontend-1.png)](./docs/img/online-boutique-frontend-1.png) | [![Screenshot of checkout screen](./docs/img/online-boutique-frontend-2.png)](./docs/img/online-boutique-frontend-2.png) |
-
-
-## Quickstart (GKE)
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/microservices-demo&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md)
-
-1. **[Create a Google Cloud Platform project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project)** or use an existing project. Set the `PROJECT_ID` environment variable and ensure the Google Kubernetes Engine and Cloud Operations APIs are enabled.
-
-```
-PROJECT_ID="<your-project-id>"
-gcloud services enable container.googleapis.com --project ${PROJECT_ID}
-gcloud services enable monitoring.googleapis.com \
-    cloudtrace.googleapis.com \
-    clouddebugger.googleapis.com \
-    cloudprofiler.googleapis.com \
-    --project ${PROJECT_ID}
-```
-
-2. **Clone this repository.**
-
-```
-git clone https://github.com/GoogleCloudPlatform/microservices-demo.git
-cd microservices-demo
-```
-
-3. **Create a GKE cluster.**
-
-```
-ZONE=us-central1-b
-gcloud container clusters create onlineboutique \
-    --project=${PROJECT_ID} --zone=${ZONE} \
-    --machine-type=e2-standard-2 --num-nodes=4
-```
-
-4. **Deploy the sample app to the cluster.**
-
-```
-kubectl apply -f ./release/kubernetes-manifests.yaml
-```
-
-5. **Wait for the Pods to be ready.**
-
-```
-kubectl get pods
-```
-
-After a few minutes, you should see:
-
-```
-NAME                                     READY   STATUS    RESTARTS   AGE
-adservice-76bdd69666-ckc5j               1/1     Running   0          2m58s
-cartservice-66d497c6b7-dp5jr             1/1     Running   0          2m59s
-checkoutservice-666c784bd6-4jd22         1/1     Running   0          3m1s
-currencyservice-5d5d496984-4jmd7         1/1     Running   0          2m59s
-emailservice-667457d9d6-75jcq            1/1     Running   0          3m2s
-frontend-6b8d69b9fb-wjqdg                1/1     Running   0          3m1s
-loadgenerator-665b5cd444-gwqdq           1/1     Running   0          3m
-paymentservice-68596d6dd6-bf6bv          1/1     Running   0          3m
-productcatalogservice-557d474574-888kr   1/1     Running   0          3m
-recommendationservice-69c56b74d4-7z8r5   1/1     Running   0          3m1s
-redis-cart-5f59546cdd-5jnqf              1/1     Running   0          2m58s
-shippingservice-6ccc89f8fd-v686r         1/1     Running   0          2m58s
-```
-
-7. **Access the web frontend in a browser** using the frontend's `EXTERNAL_IP`.
-
-```
-kubectl get service frontend-external | awk '{print $4}'
-```
-
-*Example output - do not copy*
-
-```
-EXTERNAL-IP
-<your-ip>
-```
-
-**Note**- you may see `<pending>` while GCP provisions the load balancer. If this happens, wait a few minutes and re-run the command.
-
-8. [Optional] **Clean up**:
-
-```
-gcloud container clusters delete onlineboutique \
-    --project=${PROJECT_ID} --zone=${ZONE}
-```
-
-## Other Deployment Options
-
-- **Workload Identity**: [See these instructions.](docs/workload-identity.md)
-- **Istio**: [See these instructions.](docs/service-mesh.md)
-- **Anthos Service Mesh**: ASM requires Workload Identity to be enabled in your GKE cluster. [See the workload identity instructions](docs/workload-identity.md) to configure and deploy the app. Then, use the [service mesh guide](/docs/service-mesh.md).
-- **non-GKE clusters (Minikube, Kind)**: see the [Development Guide](/docs/development-guide.md)
-- **Memorystore**: [See these instructions](/docs/memorystore.md) to replace the in-cluster `redis` database with hosted Google Cloud Memorystore (redis).
-
-
-## Architecture
-
-**Online Boutique** is composed of 11 microservices written in different
-languages that talk to each other over gRPC. See the [Development Principles](/docs/development-principles.md) doc for more information.
-
-[![Architecture of
-microservices](./docs/img/architecture-diagram.png)](./docs/img/architecture-diagram.png)
-
-Find **Protocol Buffers Descriptions** at the [`./pb` directory](./pb).
-
-| Service                                              | Language      | Description                                                                                                                       |
-| ---------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [frontend](./src/frontend)                           | Go            | Exposes an HTTP server to serve the website. Does not require signup/login and generates session IDs for all users automatically. |
-| [cartservice](./src/cartservice)                     | C#            | Stores the items in the user's shopping cart in Redis and retrieves it.                                                           |
-| [productcatalogservice](./src/productcatalogservice) | Go            | Provides the list of products from a JSON file and ability to search products and get individual products.                        |
-| [currencyservice](./src/currencyservice)             | Node.js       | Converts one money amount to another currency. Uses real values fetched from European Central Bank. It's the highest QPS service. |
-| [paymentservice](./src/paymentservice)               | Node.js       | Charges the given credit card info (mock) with the given amount and returns a transaction ID.                                     |
-| [shippingservice](./src/shippingservice)             | Go            | Gives shipping cost estimates based on the shopping cart. Ships items to the given address (mock)                                 |
-| [emailservice](./src/emailservice)                   | Python        | Sends users an order confirmation email (mock).                                                                                   |
-| [checkoutservice](./src/checkoutservice)             | Go            | Retrieves user cart, prepares order and orchestrates the payment, shipping and the email notification.                            |
-| [recommendationservice](./src/recommendationservice) | Python        | Recommends other products based on what's given in the cart.                                                                      |
-| [adservice](./src/adservice)                         | Java          | Provides text ads based on given context words.                                                                                   |
-| [loadgenerator](./src/loadgenerator)                 | Python/Locust | Continuously sends requests imitating realistic user shopping flows to the frontend.                                              |
-
-## Features
-
-- **[Kubernetes](https://kubernetes.io)/[GKE](https://cloud.google.com/kubernetes-engine/):**
-  The app is designed to run on Kubernetes (both locally on "Docker for
-  Desktop", as well as on the cloud with GKE).
-- **[gRPC](https://grpc.io):** Microservices use a high volume of gRPC calls to
-  communicate to each other.
-- **[Istio](https://istio.io):** Application works on Istio service mesh.
-- **[OpenCensus](https://opencensus.io/) Tracing:** Most services are
-  instrumented using OpenCensus trace interceptors for gRPC/HTTP.
-- **[Cloud Operations (Stackdriver)](https://cloud.google.com/products/operations):** Many services
-  are instrumented with **Profiling**, **Tracing** and **Debugging**. In
-  addition to these, using Istio enables features like Request/Response
-  **Metrics** and **Context Graph** out of the box. When it is running out of
-  Google Cloud, this code path remains inactive.
-- **[Skaffold](https://skaffold.dev):** Application
-  is deployed to Kubernetes with a single command using Skaffold.
-- **Synthetic Load Generation:** The application demo comes with a background
-  job that creates realistic usage patterns on the website using
-  [Locust](https://locust.io/) load generator.
-
-## Local Development
-
-If you would like to contribute features or fixes to this app, see the [Development Guide](/docs/development-guide.md) on how to build this demo locally.
-
-## Demos featuring Online Boutique
-
-- [Take the first step toward SRE with Cloud Operations Sandbox](https://cloud.google.com/blog/products/operations/on-the-road-to-sre-with-cloud-operations-sandbox)
-- [Deploying the Online Boutique sample application on Anthos Service Mesh](https://cloud.google.com/service-mesh/docs/onlineboutique-install-kpt)
-- [Anthos Service Mesh Workshop: Lab Guide](https://codelabs.developers.google.com/codelabs/anthos-service-mesh-workshop)
-- [KubeCon EU 2019 - Reinventing Networking: A Deep Dive into Istio's Multicluster Gateways - Steve Dake, Independent](https://youtu.be/-t2BfT59zJA?t=982)
-- Google Cloud Next'18 SF
-  - [Day 1 Keynote](https://youtu.be/vJ9OaAqfxo4?t=2416) showing GKE On-Prem
-  - [Day 3 Keynote](https://youtu.be/JQPOPV_VH5w?t=815) showing Stackdriver
-    APM (Tracing, Code Search, Profiler, Google Cloud Build)
-  - [Introduction to Service Management with Istio](https://www.youtube.com/watch?v=wCJrdKdD6UM&feature=youtu.be&t=586)
-- [Google Cloud Next'18 London – Keynote](https://youtu.be/nIq2pkNcfEI?t=3071)
-  showing Stackdriver Incident Response Management
-
----
-
-This is not an official Google project.
+NAME                   TYPE           CLUSTER-IP    EXTERNAL-IP     PORT
+istio-ingressgateway   LoadBalancer   10.84.14.98   35.188.27.116   15020:30301/TCP,80:31870...
+   ```
+20. Добавил манифестcanary.yaml
+   ```
+   $ kubectl get canaries -n microservices-demo 
+   NAME       STATUS      WEIGHT   LASTTRANSITIONTIME
+   frontend   Succeeded   0        2021-07-24T22:44:37Z
+   
+   $ kubectl get pods -n microservices-demo 
+  NAME                                        READY   STATUS    RESTARTS   AGE
+  ...
+  frontend-hipster-primary-5bbf57d9cf-tx8mb   2/2     Running   0          3m
+  ```
+  
+21.  Собрал образ с тегом v0.0.3. Имитация релиза
+   ```
+   kubectl describe canary frontend -n microservices-demo 
+   ```
+   ```
+   Events:
+  Type     Reason  Age              From     Message
+  ----     ------  ----             ----     -------
+  Warning  Synced  13m              flagger  frontend-hipster-primary.microservices-demo not ready: waiting for rollout to finish: observed deployment generation less then desired generation
+  Warning  Synced  13m              flagger  frontend-hipster-primary.microservices-demo not ready: waiting for rollout to finish: 0 of 1 updated replicas are available
+  Normal   Synced  12m              flagger  Initialization done! frontend.microservices-demo
+  Normal   Synced  10m              flagger  New revision detected! Scaling up frontend-hipster.microservices-demo
+  Normal   Synced  10m              flagger  Starting canary analysis for frontend-hipster.microservices-demo
+  Normal   Synced  10m              flagger  Advance frontend.microservices-demo canary weight 5
+  Normal   Synced  9m30s            flagger  Advance frontend.microservices-demo canary weight 10
+  Normal   Synced  9m               flagger  Advance frontend.microservices-demo canary weight 15
+  Normal   Synced  8m30s            flagger  Advance frontend.microservices-demo canary weight 20
+  Normal   Synced  8m               flagger  Advance frontend.microservices-demo canary weight 25
+  Normal   Synced  7m30s            flagger  Advance frontend.microservices-demo canary weight 30
+  Normal   Synced  6m (x3 over 7m)  flagger  (combined from similar events): Promotion completed! Scaling down frontend-hipster.microservices-demo
+  ```
+  ```
+  $ kubectl get canaries -n microservices-demo 
+  NAME       STATUS      WEIGHT   LASTTRANSITIONTIME
+  frontend   Succeeded   0        2021-07-25T00:03:45Z
+  ```
