@@ -1,0 +1,5 @@
+image:
+  repository: vkryukov/loadgenerator
+  tag: latest
+ingress:
+  host: 35.188.27.116
