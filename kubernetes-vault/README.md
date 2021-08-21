@@ -1,6 +1,6 @@
-#Homework 11
+# Homework 11
 
-
+```
 $ helm status consul
 NAME: consul
 LAST DEPLOYED: Fri Aug 20 22:21:37 2021
@@ -22,10 +22,10 @@ To learn more about the release, run:
 
   $ helm status consul
   $ helm get all consul
-
+```
 
 -------------------
-
+```
 $ helm status vault
 NAME: vault
 LAST DEPLOYED: Fri Aug 20 22:25:12 2021
@@ -45,9 +45,9 @@ Your release is named vault. To learn more about the release, try:
 
   $ helm status vault
   $ helm get manifest vault
-
+```
   -----------------------------
-
+```
   $ kubectl logs vault-0
 ==> Vault server configuration:
 
@@ -79,9 +79,9 @@ Your release is named vault. To learn more about the release, try:
 2021-08-20T21:26:33.152Z [INFO]  core: seal configuration missing, not initialized
 2021-08-20T21:26:38.114Z [INFO]  core: security barrier not initialized
 2021-08-20T21:26:38.116Z [INFO]  core: seal configuration missing, not initialized
-
+```
 -----------
-
+```
 $ kubectl get pods
 NAME                                    READY   STATUS    RESTARTS   AGE
 consul-ntcdc                            1/1     Running   0          5m1s
@@ -94,9 +94,9 @@ vault-0                                 0/1     Running   0          85s
 vault-1                                 0/1     Running   0          84s
 vault-2                                 0/1     Running   0          83s
 vault-agent-injector-6748569f56-g8gpr   1/1     Running   0          85s
-
+```
 -------------------------
-
+```
 $ kubectl exec -it vault-0 -- vault operator init -key-shares=1 -key-threshold=1
 Unseal Key 1: 0V8U0EDl1CR28hfcgecXMGeu2UB6SbaxhGyRULtpT+I=
 
@@ -112,9 +112,9 @@ reconstruct the master key, Vault will remain permanently sealed!
 
 It is possible to generate new unseal keys, provided you have a quorum of
 existing unseal keys shares. See "vault operator rekey" for more information.
-
+```
 -------
-
+```
 $ kubectl logs vault-0
 ...
 
@@ -143,10 +143,10 @@ $ kubectl logs vault-0
 2021-08-20T21:30:25.801Z [INFO]  core: pre-seal teardown starting
 2021-08-20T21:30:25.801Z [INFO]  rollback: stopping rollback manager
 2021-08-20T21:30:25.801Z [INFO]  core: pre-seal teardown complete
-
+```
 
 -------
-
+```
 $ kubectl exec -it vault-0 -- vault status
 Key                Value
 ---                -----
@@ -161,10 +161,10 @@ Version            1.8.0
 Storage Type       consul
 HA Enabled         true
 command terminated with exit code 2
-
+```
 
 -------
-
+```
 $ kubectl exec -it vault-0 env | grep VAULT
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 VAULT_CLUSTER_ADDR=https://vault-0.vault-internal:8201
@@ -173,9 +173,9 @@ VAULT_K8S_POD_NAME=vault-0
 VAULT_K8S_NAMESPACE=default
 VAULT_ADDR=http://127.0.0.1:8200
 ...
-
+```
 ----
-
+```
 kubectl exec -it vault-0 -- vault operator unseal '0V8U0EDl1CR28hfcgecXMGeu2UB6SbaxhGyRULtpT+I='
 
 Key                    Value
@@ -193,7 +193,8 @@ HA Enabled             true
 HA Cluster             n/a
 HA Mode                standby
 Active Node Address    <none>
-
+```
+```
 kubectl exec -it vault-1 -- vault operator unseal '0V8U0EDl1CR28hfcgecXMGeu2UB6SbaxhGyRULtpT+I='
 
 Key                    Value
@@ -211,8 +212,8 @@ HA Enabled             true
 HA Cluster             https://vault-0.vault-internal:8201
 HA Mode                standby
 Active Node Address    http://10.244.2.5:8200
-
-
+```
+```
 kubectl exec -it vault-2 -- vault operator unseal '0V8U0EDl1CR28hfcgecXMGeu2UB6SbaxhGyRULtpT+I='
 
 Key                    Value
@@ -230,9 +231,9 @@ HA Enabled             true
 HA Cluster             https://vault-0.vault-internal:8201
 HA Mode                standby
 Active Node Address    http://10.244.2.5:8200
-
+```
 -----
-
+```
 $ kubectl exec -it vault-0 -- vault auth list
 Error listing enabled authentications: Error making API request.
 
@@ -241,9 +242,9 @@ Code: 400. Errors:
 
 * missing client token
 command terminated with exit code 2
-
+```
 -----
-
+```
 
 $ kubectl exec -it vault-0 -- vault login
 Token (will be hidden): 
@@ -260,26 +261,28 @@ token_renewable      false
 token_policies       ["root"]
 identity_policies    []
 policies             ["root"]
-
+```
 
 ---
-
+```
 $ kubectl exec -it vault-0 -- vault auth list
 Path      Type     Accessor               Description
 ----      ----     --------               -----------
 token/    token    auth_token_148216db    token based credentials
 
-
+```
 -----
-
+```
 $ kubectl exec -it vault-0 -- vault auth list
 Path      Type     Accessor               Description
 ----      ----     --------               -----------
 token/    token    auth_token_148216db    token based credentials
-
+```
+```
 $ kubectl exec -it vault-0 -- vault secrets enable --path=otus kv
 Success! Enabled the kv secrets engine at: otus/
-
+```
+```
 $ kubectl exec -it vault-0 -- vault secrets list --detailed
 Path          Plugin       Accessor              Default TTL    Max TTL    Force No Cache    Replication    Seal Wrap    External Entropy Access    Options    Description                                                UUID
 ----          ------       --------              -----------    -------    --------------    -----------    ---------    -----------------------    -------    -----------                                                ----
@@ -287,60 +290,64 @@ cubbyhole/    cubbyhole    cubbyhole_29be3f9e    n/a            n/a        false
 identity/     identity     identity_b0692bc4     system         system     false             replicated     false        false                      map[]      identity store                                             d95cbcdc-7360-b92e-8eb4-d557fbc05719
 otus/         kv           kv_c6960386           system         system     false             replicated     false        false                      map[]      n/a                                                        0d1b86b0-661b-5b50-91af-1ab7d9904d8a
 sys/          system       system_18c5f57c       n/a            n/a        false             replicated     false        false                      map[]      system endpoints used for control, policy and debugging    2ec5cdc6-0d17-43ce-c3a4-297c0706d693
-
+```
+```
 $ kubectl exec -it vault-0 -- vault kv put otus/otus-ro/config username='otus'
 password='asajkjkahs'Success! Data written to: otus/otus-ro/config
-
+```
+```
 $ kubectl exec -it vault-0 -- vault kv put otus/otus-ro/config username='otus' password='asajkjkahs'
 Success! Data written to: otus/otus-ro/config
-
+```
+```
 $ kubectl exec -it vault-0 -- vault kv put otus/otus-rw/config username='otus' password='asajkjkahs'
 Success! Data written to: otus/otus-rw/config
-
+```
+```
 $ kubectl exec -it vault-0 -- vault read otus/otus-ro/config
 Key                 Value
 ---                 -----
 refresh_interval    768h
 password            asajkjkahs
 username            otus
-
+```
+```
 $ kubectl exec -it vault-0 -- vault kv get otus/otus-rw/config
 ====== Data ======
 Key         Value
 ---         -----
 password    asajkjkahs
 username    otus
-
+```
 ----
-
+```
 $ kubectl exec -it vault-0 -- vault auth enable kubernetes
 Success! Enabled kubernetes auth method at: kubernetes/
-
+```
 ---
-
+```
 $ kubectl exec -it vault-0 -- vault auth list
 Path           Type          Accessor                    Description
 ----           ----          --------                    -----------
 kubernetes/    kubernetes    auth_kubernetes_885b3832    n/a
 token/         token         auth_token_148216db         token based credentials
-
+```
 ---
-
+```
 $ kubectl create serviceaccount vault-auth
 serviceaccount/vault-auth created
-
+```
 ---
-
+```
 $ kubectl apply -f vault-auth-service-account.yml
 clusterrolebinding.rbac.authorization.k8s.io/role-tokenreview-binding created
-
+```
 ---
-
+```
 export VAULT_SA_NAME=$(kubectl get sa vault-auth -o jsonpath="{.secrets[*]['name']}")
 
 $ echo $VAULT_SA_NAME
 vault-auth-token-7s59r
-
 
 export SA_JWT_TOKEN=$(kubectl get secret $VAULT_SA_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
 
@@ -358,18 +365,18 @@ export K8S_HOST=$(more ~/.kube/config | grep server |awk '/http/ {print $NF}')
 
 $ echo $K8S_HOST
 https://34.71.116.197 https://34.121.39.251 https://34.133.94.119 https://34.136.195.107 https://127.0.0.1:36238
-
+```
 ---
-
+```
 kubectl exec -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$SA_JWT_TOKEN" kubernetes_host="$K8S_HOST" kubernetes_ca_cert="$SA_CA_CRT"
-
+```
 ---
-
+```
 $ kubectl exec -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$SA_JWT_TOKEN" kubernetes_host="$K8S_HOST" kubernetes_ca_cert="$SA_CA_CRT"
 Success! Data written to: auth/kubernetes/config
-
+```
 ---
-
+```
 $ kubectl cp otus-policy.hcl vault-0:/tmp/
 
 $kubectl exec -it vault-0 -- vault policy write otus-policy /tmp/otus-policy.hcl
@@ -377,9 +384,9 @@ Success! Uploaded policy: otus-policy
 
 $kubectl exec -it vault-0 -- vault write auth/kubernetes/role/otus bound_service_account_names=vault-auth bound_service_account_namespaces=default policies=otus-policy ttl=24h
 Success! Data written to: auth/kubernetes/role/otus
-
+```
 ---
-
+```
 $ kubectl run --generator=run-pod/v1 tmp --rm -i --tty --serviceaccount=vault-auth --image alpine:3.7 
 
 #apk add curl jq
@@ -389,14 +396,14 @@ $ kubectl run --generator=run-pod/v1 tmp --rm -i --tty --serviceaccount=vault-au
 
 #TOKEN=$(curl -k -s --request POST --data '{"jwt": "'$KUBE_TOKEN'", "role": "test"}' $VAULT_ADDR/v1/auth/kubernetes/login | jq '.auth.client_token' | awk -F\" '{print $2}')
 
-
+```
 ---
-
+!!!!
 Так как otus/otus-rw имеет разрешение create мы можем записать otus-rw/config1, но otusrw/config уже существует, а на изменение разрешения нет. Для разрешения внесения изменения необзодимо добавить разрешение update 
 
 
 ---
-
+```
 $ kubectl get pods
 NAME                                    READY   STATUS    RESTARTS   AGE
 consul-ntcdc                            1/1     Running   1          143m
@@ -411,9 +418,9 @@ vault-2                                 1/1     Running   1          139m
 vault-agent-injector-6748569f56-g8gpr   1/1     Running   3          140m
 vault-agent-otus                        1/1     Running   1          4m41s
 
-
+```
 ---
-
+```
 $kubectl exec -it vault-0 -- vault secrets enable pki
 Success! Enabled the pki secrets engine at: pki/
 
@@ -421,14 +428,14 @@ $kubectl exec -it vault-0 -- vault secrets tune -max-lease-ttl=87600h pki
 Success! Tuned the secrets engine at: pki/
 
 kubectl exec -it vault-0 -- vault write -field=certificate pki/root/generate/internal common_name="exmaple.ru" ttl=87600h > CA_cert.crt
-
+```
 ---
-
+```
 kubectl exec -it vault-0 -- vault write pki/config/urls issuing_certificates="http://vault:8200/v1/pki/ca" crl_distribution_points="http://vault:8200/v1/pki/crl"
 Success! Data written to: pki/config/urls
-
+```
 ---
-
+```
 $kubectl exec -it vault-0 -- vault secrets enable --path=pki_int pki
 kubectl exec -it vault-0 -- vault secrets enable --path=pki_int pki
 
@@ -436,23 +443,23 @@ $kubectl exec -it vault-0 -- vault secrets tune -max-lease-ttl=87600h pki_int
 Success! Tuned the secrets engine at: pki_int/
 
 $kubectl exec -it vault-0 -- vault write -format=json pki_int/intermediate/generate/internal common_name="example.ru Intermediate Authority" | jq -r '.data.csr' > pki_intermediate.csr 
-
+```
 ---
-
+```
 $kubectl cp pki_intermediate.csr vault-0:/tmp/
 $kubectl exec -it vault-0 -- vault write -format=json pki/root/sign-intermediate csr=@/tmp/pki_intermediate.csr format=pem_bundle ttl="43800h" | jq -r '.data.certificate' > intermediate.cert.pem
 $kubectl cp intermediate.cert.pem vault-0:/tmp/
 
 $kubectl exec -it vault-0 -- vault write pki_int/intermediate/set-signed certificate=@/tmp/intermediate.cert.pem
 Success! Data written to: pki_int/intermediate/set-signed
-
+```
 ---
-
+```
 $kubectl exec -it vault-0 -- vault write pki_int/roles/example-dot-ru allowed_domains="example.ru" allow_subdomains=true max_ttl="720h"
 Success! Data written to: pki_int/roles/example-dot-ru
-
+```
 ---
-
+```
 $ kubectl exec -it vault-0 -- vault write pki_int/issue/example-dot-ru common_name="gitlab.example.ru" ttl="24h"
 Key                 Value
 ---                 -----
@@ -551,11 +558,12 @@ gagLL7tkEWMiWxfk/VqNtK8d8MbczlPrwMv2bpOTbyiZatlZsLs5
 -----END RSA PRIVATE KEY-----
 private_key_type    rsa
 serial_number       41:dd:e9:cd:65:14:ed:8f:9a:23:b9:e5:bf:c4:0f:11:93:e1:34:28
-
+```
 ---
-
+```
 $ kubectl exec -it vault-0 -- vault write pki_int/revoke serial_number="41:dd:e9:cd:65:14:ed:8f:9a:23:b9:e5:bf:c4:0f:11:93:e1:34:28"
 Key                        Value
 ---                        -----
 revocation_time            1629504248
 revocation_time_rfc3339    2021-08-21T00:04:08.233993161
+```
