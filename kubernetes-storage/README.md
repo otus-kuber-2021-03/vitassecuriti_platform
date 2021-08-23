@@ -22,11 +22,11 @@ standard (default)   rancher.io/local-path   Delete          WaitForFirstConsume
 ---
 ```
 $ kubectl apply -f storage-pvc.yaml
-persistentvolumeclaim/csi-pvc created
+persistentvolumeclaim/storage-pvc created
 
 $ kubectl get pv
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS      REASON   AGE
-pvc-ce3ffa25-9ee6-42e0-b587-f247de8346b7   1Gi        RWO            Delete           Bound    default/csi-pvc   csi-hostpath-sc            
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS      REASON   AGE
+pvc-ce3ffa25-9ee6-42e0-b587-f247de8346b7   1Gi        RWO            Delete           Bound    default/storage-pvc   csi-hostpath-sc            
 ```
 ---
 ```
