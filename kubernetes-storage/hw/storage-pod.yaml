@@ -1,0 +1,16 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: storage-pod
+spec:
+  containers:
+    - name: test
+      image: busybox
+      command: ["sh", "-ec", "sleep 3600"]
+      volumeMounts:
+        - mountPath: /data
+          name: csi-vol
+  volumes:
+    - name: csi-vol
+      persistentVolumeClaim:
+        claimName: storage-pvc
