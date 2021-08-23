@@ -31,22 +31,22 @@ pvc-ce3ffa25-9ee6-42e0-b587-f247de8346b7   1Gi        RWO            Delete     
 ---
 ```
 $ kubectl apply -f storage-pod.yaml
-pod/test created
+pod/storage-pod created
 
 
 $ kubectl get pods
 NAME                   READY   STATUS    RESTARTS   AGE
 csi-hostpathplugin-0   9/9     Running   0          15m
-test                   1/1     Running   0          32s
+storage-pod            1/1     Running   0          32s
 
 
-$ kubectl exec -it test -- /bin/sh
+$ kubectl exec -it storage-pod -- /bin/sh
 / # ls
 bin   data  dev   etc   home  proc  root  sys   tmp   usr   var
 
 
-$ kubectl describe pod test
-Name:         test
+$ kubectl describe pod storage-pod
+Name:         storage-pod
 Namespace:    default
 Priority:     0
 Node:         stor-control-plane/172.18.0.2
